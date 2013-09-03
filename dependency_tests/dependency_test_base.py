@@ -1,5 +1,12 @@
-import inspect
 import networkx
+
+from nose import loader
+
+from nose.plugins import Plugin
+
+import os
+
+# heavily borrowed from https://gist.github.com/Redsz/5736166
 
 state = {}
 
@@ -10,26 +17,40 @@ def requires(dependencies):
         dependency_list = dependencies
 
     def fn(func):
-        def wrapped(self, *args, **kwargs):
-            func(self, *args, **kwargs)
+        def wrapped(*args, **kwargs):
+            return func(*args, **kwargs)
         wrapped._dependency_list = dependency_list
         return wrapped
     return fn
     
 
-class DependencyTestBase(unittest.TestCase):
-    def execution_order(self):
-        """Iterate over methods in this class and return an ordered list
-        based on dependencies"""
-        # map of method name to a list of required methods
-        root = "setUp"
-        dependency_map = {root : []}
+class DependencyTests(Plugin):
+    def options(self, parser, env=os.environ):
+        Plugin.options(self, parser, env)
+        parser.add_option('--dependency', action='store_true', dest='dependency',
+                          help="Order tests according to @requires decorators")
 
-        methods = inspect.getmembers(self)
-        for method_name, method in methods:
-            if method_name.startswith("test_"):
-                dependency_list = getattr(method, "_dependency_list", [])
-                dependency_map[method_name] = [root] + dependency_list
+    def configure(self, options, conf):
+        Plugin.configure(self, options, conf)
+        if options.steps:
+            self.enabled = True
+
+    def loadTestsFromTestCase(self, cls):
+        l = loader.TestLoader()
+        tmp = l.loadTestsFromTestCase(cls)
+
+        # test name to test
+        test_map = {}
+        
+        dependency_map = {}
+        for test in tmp._tests:
+            test_name = test.test._testMethodName
+
+            test_map[test_name] = test
+            func = getattr(cls, test_name)
+
+            dependency_list = getattr(func, "_dependency_list", [])
+            dependency_map[test_name] = dependency_list
 
         graph = networkx.DiGraph()
         for key, vals in dependency_map.iteritems():
@@ -38,28 +59,8 @@ class DependencyTestBase(unittest.TestCase):
 
         dependency_order = networkx.topological_sort(graph)
 
-        return dependency_order
+        tests_in_order = [test_map[test_name] for test_name in dependency_order]
+        tmp._tests = tests_in_order
+        return tmp
+        
 
-    @requires
-    def test_bulk_queue(self):
-        print "running test_bulk_queue..."
-
-    def test_other(self):
-        print "running test_other..."
-
-    @requires("test_bulk_queue")
-    def test_basic(self):
-        print "running test_basic"
-
-    def setUp(self):
-        pass
-
-    def execute(self):
-        pass
-
-
-def main():
-    print DependencyTestBase().execution_order()
-
-if __name__ == "__main__":
-    main()
