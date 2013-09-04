@@ -19,8 +19,6 @@ log = logging.getLogger('nose.plugins.step')
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
 
-state = {}
-
 def requires(dependencies):
     if type(dependencies) == str:
         dependency_list = [dependencies]
