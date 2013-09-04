@@ -19,11 +19,16 @@ log = logging.getLogger('nose.plugins.step')
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
 
-def requires(dependencies):
-    if type(dependencies) == str:
-        dependency_list = [dependencies]
+def requires(*args):
+    if len(args) == 0:
+        dependency_list = []
+    elif len(args) == 1:
+        if type(args[0]) == str:
+            dependency_list = [args[0]]
+        else:
+            dependency_list = args[0]
     else:
-        dependency_list = dependencies
+        dependency_list = args
 
     def fn(func):
         func._dependency_list = dependency_list
