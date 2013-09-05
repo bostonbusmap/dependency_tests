@@ -1,5 +1,5 @@
 import unittest
-from dependency_tests.dependency_test_base import requires
+from dependency_tests.plugin import requires
 
 class TestBasic(unittest.TestCase):
     @requires("test_b")
