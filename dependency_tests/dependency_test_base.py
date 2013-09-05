@@ -74,7 +74,8 @@ class DependencyTests(Plugin):
         tests_in_order = [test_map[test_name] for test_name in dependency_order
                           if test_name in test_map]
 
-        yield ContextSuite(tests_in_order)
+        tmp._tests = tests_in_order
+        return tmp
 
     def makeTest(self, obj, parent=None):
         """Given a test object and its parent, return a test case
