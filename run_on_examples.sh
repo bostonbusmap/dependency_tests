@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 rm -rf venv-run-examples
 virtualenv venv-run-examples
