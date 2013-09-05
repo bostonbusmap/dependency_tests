@@ -1,7 +1,7 @@
 import unittest
 from dependency_tests.dependency_test_base import requires
 
-class TestBasic(unittest.TestCase):
+class TestBasicWithCycle(unittest.TestCase):
     @requires("test_b")
     def test_a(self):
         print "a"
@@ -9,7 +9,7 @@ class TestBasic(unittest.TestCase):
     def test_b(self):
         print "b"
 
-    @requires("test_d", "test_h")
+    @requires("test_d", "test_f")
     def test_e(self):
         print "e"
 
@@ -30,4 +30,5 @@ class TestBasic(unittest.TestCase):
 
     def test_d(self):
         print "d"
+
 
