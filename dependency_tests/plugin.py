@@ -18,6 +18,7 @@ log = logging.getLogger('nose.plugins.step')
 
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
+# prepareTestLoader from https://github.com/erikrose/nose-progressive/blob/master/noseprogressive/plugin.py
 
 def requires(*args):
     if len(args) == 0:
@@ -112,3 +113,36 @@ class DependencyTests(Plugin):
         else:
             return Failure(TypeError,
                            "Can't make a test from %s" % obj)
+
+    def prepareTestLoader(self, loader):
+        """Insert ourselves into loader calls to count tests.
+
+The top-level loader call often returns lazy results, like a LazySuite.
+This is a problem, as we would destroy the suite by iterating over it
+to count the tests. Consequently, we monkeypatch the top-level loader
+call to do the load twice: once for the actual test running and again
+to yield something we can iterate over to do the count.
+
+"""
+        def capture_suite(orig_method, *args, **kwargs):
+            """Intercept calls to the loader before they get lazy.
+
+Re-execute them to grab a copy of the possibly lazy suite, and
+count the tests therein.
+
+"""
+            self._totalTests += orig_method(*args, **kwargs).countTestCases()
+
+            # Clear out the loader's cache. Otherwise, it never finds any tests
+            # for the actual test run:
+            loader._visitedPaths = set()
+
+            return orig_method(*args, **kwargs)
+
+        # TODO: If there's ever a practical need, also patch loader.suiteClass
+        # or even TestProgram.createTests. createTests seems to be main top-
+        # level caller of loader methods, and nose.core.collector() (which
+        # isn't even called in nose) is an alternate one.
+        if hasattr(loader, 'loadTestsFromNames'):
+            loader.loadTestsFromNames = partial(capture_suite,
+                                                loader.loadTestsFromNames)
