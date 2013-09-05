@@ -16,6 +16,8 @@ import logging
 import os
 log = logging.getLogger('nose.plugins.step')
 
+from functools import partial
+
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
 # prepareTestLoader from https://github.com/erikrose/nose-progressive/blob/master/noseprogressive/plugin.py
