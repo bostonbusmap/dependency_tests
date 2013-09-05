@@ -38,7 +38,7 @@ def requires(*args):
 class DependencyTests(Plugin):
     def options(self, parser, env=os.environ):
         Plugin.options(self, parser, env)
-        parser.add_option('--dependency', action='store_true', dest='dependency',
+        parser.add_option('--with-dependency', action='store_true', dest='dependency',
                           help="Order tests according to @requires decorators")
 
     def configure(self, options, conf):
