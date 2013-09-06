@@ -2,13 +2,18 @@ import networkx
 import unittest
 
 from nose import loader
-from nose.suite import ContextSuite
-
+from nose.suite import LazySuite, ContextSuite, ContextList
 from nose.plugins import Plugin
+from nose.pyversion import sort_list, cmp_to_key
 
 from inspect import isfunction, ismethod
-from nose.util import (getpackage, isclass, isgenerator, ispackage,
-                       resolve_name, transplant_func, transplant_class)
+from nose.util import (
+    isclass,
+    isgenerator,
+    transplant_func,
+    transplant_class,
+    test_address
+    )
 from nose.case import FunctionTestCase, MethodTestCase
 from nose.failure import Failure
 
@@ -17,6 +22,7 @@ import os
 log = logging.getLogger('nose.plugins.step')
 
 from functools import partial
+import sys
 
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
@@ -50,7 +56,7 @@ class DependencyTests(Plugin):
             self.enabled = True
 
     def Dependency_loadTestsFromTestCase(self, cls):
-        l = loader.TestLoader()
+        l = self._loader
         tmp = l.loadTestsFromTestCase(cls)
 
         # test name to test
@@ -80,11 +86,15 @@ class DependencyTests(Plugin):
         tmp._tests = tests_in_order
         return tmp
 
+    def prepareTestLoader(self, loader):
+        self._loader = loader
+
     def makeTest(self, obj, parent=None):
+
         """Given a test object and its parent, return a test case
         or test suite.
         """
-        ldr = loader.TestLoader()
+        ldr = self._loader
         if isinstance(obj, unittest.TestCase):
             return obj
         elif isclass(obj):
@@ -115,36 +125,3 @@ class DependencyTests(Plugin):
         else:
             return Failure(TypeError,
                            "Can't make a test from %s" % obj)
-
-    def prepareTestLoader(self, loader):
-        """Insert ourselves into loader calls to count tests.
-
-The top-level loader call often returns lazy results, like a LazySuite.
-This is a problem, as we would destroy the suite by iterating over it
-to count the tests. Consequently, we monkeypatch the top-level loader
-call to do the load twice: once for the actual test running and again
-to yield something we can iterate over to do the count.
-
-"""
-        def capture_suite(orig_method, *args, **kwargs):
-            """Intercept calls to the loader before they get lazy.
-
-Re-execute them to grab a copy of the possibly lazy suite, and
-count the tests therein.
-
-"""
-            self._totalTests += orig_method(*args, **kwargs).countTestCases()
-
-            # Clear out the loader's cache. Otherwise, it never finds any tests
-            # for the actual test run:
-            loader._visitedPaths = set()
-
-            return orig_method(*args, **kwargs)
-
-        # TODO: If there's ever a practical need, also patch loader.suiteClass
-        # or even TestProgram.createTests. createTests seems to be main top-
-        # level caller of loader methods, and nose.core.collector() (which
-        # isn't even called in nose) is an alternate one.
-        if hasattr(loader, 'loadTestsFromNames'):
-            loader.loadTestsFromNames = partial(capture_suite,
-                                                loader.loadTestsFromNames)
