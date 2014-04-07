@@ -10,12 +10,12 @@ We run a series of jobs which can take a long time. I recently learned about Doc
 ## Usage
 
 The basic steps are:
- - {{{python setup.py install}}}
- - Add {{{from dependency_tests.plugin import requires}}} at the top of your test case.
+ - `python setup.py install`
+ - Add `from dependency_tests.plugin import requires` at the top of your test case.
  - Add the @requires attribute on test methods to specify which tests should run before other tests.
  - Run nose with '--with-dependency' to enable this plugin.
 
-See {{{examples/test_basic.py}}} for a working example, and {{{run_on_examples.sh}}} for a script to run it.
+See `examples/test_basic.py` for a working example, and `run_on_examples.sh` for a script to run it.
 
 ## Caveat
 
