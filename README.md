@@ -25,7 +25,7 @@ See `examples/test_basic.py` for a working example, and `run_on_examples.sh` for
         def test_b(self):
             print "b"
 
-
+This would cause test_b to run first, then test_a.
 
 
 ## Caveat
