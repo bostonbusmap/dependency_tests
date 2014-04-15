@@ -15,7 +15,18 @@ The basic steps are:
  - Add the @requires attribute on test methods to specify which tests should run before other tests.
  - Run nose with '--with-dependency' to enable this plugin.
 
-See `examples/test_basic.py` for a working example, and `run_on_examples.sh` for a script to run it.
+See `examples/test_basic.py` for a working example, and `run_on_examples.sh` for a script to run it. A code snippet for the basic idea:
+
+   class TestBasic(unittest.TestCase):
+        @requires("test_b")
+        def test_a(self):
+            print "a"
+
+        def test_b(self):
+            print "b"
+
+
+
 
 ## Caveat
 
