@@ -17,7 +17,7 @@ The basic steps are:
 
 See `examples/test_basic.py` for a working example, and `run_on_examples.sh` for a script to run it. A code snippet for the basic idea:
 
-   class TestBasic(unittest.TestCase):
+    class TestBasic(unittest.TestCase):
         @requires("test_b")
         def test_a(self):
             print "a"
