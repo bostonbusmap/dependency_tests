@@ -1,28 +1,21 @@
 import networkx
 import unittest
 
-from nose import loader
-from nose.suite import LazySuite, ContextSuite, ContextList
 from nose.plugins import Plugin
-from nose.pyversion import sort_list, cmp_to_key
 
 from inspect import isfunction, ismethod
+from nose.case import FunctionTestCase, MethodTestCase
+from nose.failure import Failure
 from nose.util import (
     isclass,
     isgenerator,
     transplant_func,
-    transplant_class,
-    test_address
-    )
-from nose.case import FunctionTestCase, MethodTestCase
-from nose.failure import Failure
+    transplant_class
+)
 
 import logging
 import os
 log = logging.getLogger('nose.plugins.step')
-
-from functools import partial
-import sys
 
 # heavily borrowed from https://gist.github.com/Redsz/5736166
 # makeTest from https://gist.github.com/andresriancho/3844715
@@ -56,12 +49,14 @@ class DependencyTests(Plugin):
             self.enabled = True
 
     def Dependency_loadTestsFromTestCase(self, cls):
+        """Get tests from nose test runner, then sort the tests topologically"""
         l = self._loader
         tmp = l.loadTestsFromTestCase(cls)
 
         # test name to test
         test_map = {}
         
+        # create a list of dependencies for each test method
         dependency_map = {}
         for test in tmp._tests:
             test_name = test.test._testMethodName
@@ -72,6 +67,7 @@ class DependencyTests(Plugin):
             dependency_list = getattr(func, "_dependency_list", [])
             dependency_map[test_name] = dependency_list
 
+        # sort dependency list topologically
         graph = networkx.DiGraph()
         for key, vals in dependency_map.iteritems():
             for val in vals:
@@ -101,7 +97,7 @@ class DependencyTests(Plugin):
             if parent and obj.__module__ != parent.__name__:
                 obj = transplant_class(obj, parent.__name__)
             if issubclass(obj, unittest.TestCase):
-                # Randomize the order of the tests in the TestCase
+                # Sort the tests according to their dependencies
                 return self.Dependency_loadTestsFromTestCase(obj)
             else:
                 return ldr.loadTestsFromTestClass(obj)
