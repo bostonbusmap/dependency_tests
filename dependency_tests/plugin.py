@@ -18,8 +18,8 @@ import os
 log = logging.getLogger('nose.plugins.step')
 
 # heavily borrowed from https://gist.github.com/Redsz/5736166
-# makeTest from https://gist.github.com/andresriancho/3844715
-# prepareTestLoader from https://github.com/erikrose/nose-progressive/blob/master/noseprogressive/plugin.py
+#  and https://gist.github.com/andresriancho/3844715
+#  and https://github.com/erikrose/nose-progressive/blob/master/noseprogressive/plugin.py
 
 def requires(*args):
     if len(args) == 0:
