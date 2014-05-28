@@ -69,7 +69,7 @@ class DependencyTests(Plugin):
 
         # sort dependency list topologically
         graph = networkx.DiGraph()
-        for key, vals in dependency_map.iteritems():
+        for key, vals in dependency_map.items():
             for val in vals:
                 graph.add_edge(val, key)
             graph.add_edge(key, "root")
