@@ -32,6 +32,8 @@ This would cause test_b to run first, then test_a.
 
 This is not well tested at all. It will probably fall apart for non-trivial cases, but I accept pull requests!
 
+Since the attribute adds a property `_dependency_list` to the function, it won't work well with other decorators unless the other decorators copy this property.
+
 ## License
 
 GPL, since this is adapted from GPL'ed code.
