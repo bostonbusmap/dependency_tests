@@ -13,6 +13,8 @@ from nose.util import (
     transplant_class
 )
 
+import six
+
 import logging
 import os
 log = logging.getLogger('nose.plugins.step')
@@ -25,7 +27,12 @@ def requires(*args):
     if len(args) == 0:
         dependency_list = []
     elif len(args) == 1:
-        if type(args[0]) == str:
+        if callable(args[0]):
+            # user didn't have parentheses on decorator
+            func = args[0]
+            func._dependency_list = []
+            return func
+        elif isinstance(args[0], six.string_types):
             dependency_list = [args[0]]
         else:
             dependency_list = args[0]
