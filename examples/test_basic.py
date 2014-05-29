@@ -21,6 +21,7 @@ class TestBasic(unittest.TestCase):
     def test_g(self):
         print "g"
 
+    @requires()
     def test_h(self):
         print "h"
 
@@ -28,6 +29,7 @@ class TestBasic(unittest.TestCase):
     def test_c(self):
         print "c"
 
+    @requires
     def test_d(self):
         print "d"
 
