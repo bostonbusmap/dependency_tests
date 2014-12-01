@@ -97,7 +97,6 @@ class DependencyTests(Plugin):
         """Given a test object and its parent, return a test case
         or test suite.
         """
-        ldr = self._loader
         if isinstance(obj, unittest.TestCase):
             return obj
         elif isclass(obj):
@@ -107,24 +106,6 @@ class DependencyTests(Plugin):
                 # Sort the tests according to their dependencies
                 return self.Dependency_loadTestsFromTestCase(obj)
             else:
-                return ldr.loadTestsFromTestClass(obj)
-        elif ismethod(obj):
-            if parent is None:
-                parent = obj.__class__
-            if issubclass(parent, unittest.TestCase):
-                return parent(obj.__name__)
-            else:
-                if isgenerator(obj):
-                    return ldr.loadTestsFromGeneratorMethod(obj, parent)
-                else:
-                    return MethodTestCase(obj)
-        elif isfunction(obj):
-            if parent and obj.__module__ != parent.__name__:
-                obj = transplant_func(obj, parent.__name__)
-            if isgenerator(obj):
-                return ldr.loadTestsFromGenerator(obj, parent)
-            else:
-                return FunctionTestCase(obj)
+                raise Exception("All tests must derive from unittest.TestCase to work with dependency_tests plugin")
         else:
-            return Failure(TypeError,
-                           "Can't make a test from %s" % obj)
+            raise Exception("All tests must derive from unittest.TestCase to work with dependency_tests plugin")
